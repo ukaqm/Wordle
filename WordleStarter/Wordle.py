@@ -23,6 +23,8 @@ def wordle():
             return
         else:
             gw.show_message("This is a valid word.")
+        
+        
 
     #RANDOMLY CHOOSES the word for user to guess
     word = random.choice(FIVE_LETTER_WORDS)
