@@ -34,8 +34,8 @@ def wordle():
     gw.add_enter_listener(enter_action)
 
     #PRINTS word onto first row of wordle grid completing milestone 1 task
-    for iCount in range(N_ROWS):
-        gw.set_square_letter(0, iCount, word[iCount])
+    #for iCount in range(N_ROWS):
+        #gw.set_square_letter(0, iCount, word[iCount])
 
 # Startup code
 
