@@ -30,25 +30,33 @@ def wordle():
             if gw.get_current_row() < N_ROWS:
                 word_remaining = list(word)
 
-                #First pass: Mark correct letters and remove them from word_remaining
                 for iCount in range(N_COLS):
-                    gw.set_square_letter(current_row, iCount, entered_word[iCount])
-                    if entered_word[iCount] == word[iCount]:
+                    letter = entered_word[iCount].upper()  # Get the uppercase letter
+                
+                # First pass: Mark correct letters and remove them from word_remaining
+                    if letter == word[iCount]:
                         gw.set_square_color(current_row, iCount, CORRECT_COLOR)
-                        #Removes letter from consideration as it is known that it is part of the word and in the correct position
-                        word_remaining[iCount] = None  
+                        # Set key color to CORRECT_COLOR if it's not already set
+                        if gw.get_key_color(letter) != CORRECT_COLOR:
+                            gw.set_key_color(letter, CORRECT_COLOR)
+                        word_remaining[iCount] = None
 
-                #Second pass: Check for present letters
                 for iCount in range(N_COLS):
-                    if entered_word[iCount] != word[iCount] and entered_word[iCount] in word_remaining:
+                    letter = entered_word[iCount].upper()  # Get the uppercase letter
+
+                    # Second pass: Check for present letters
+                    if letter != word[iCount] and letter in word_remaining:
                         gw.set_square_color(current_row, iCount, PRESENT_COLOR)
-                        #Removes letter from consideration as it is known that it is part of the word BUT NOT in the correct position
-                        word_remaining[word_remaining.index(entered_word[iCount])] = None  
-                    #If letter isn't present color is gray.
+                        # Set key color to PRESENT_COLOR if it's not already set to CORRECT_COLOR
+                        if gw.get_key_color(letter) not in [CORRECT_COLOR, PRESENT_COLOR]:
+                            gw.set_key_color(letter, PRESENT_COLOR)
+                        word_remaining[word_remaining.index(letter)] = None
                     elif gw.get_square_color(current_row, iCount) != CORRECT_COLOR:
                         gw.set_square_color(current_row, iCount, MISSING_COLOR)
-
-                
+                        # Set key color to MISSING_COLOR if it's not already set to CORRECT_COLOR or PRESENT_COLOR
+                        if gw.get_key_color(letter) not in [CORRECT_COLOR, PRESENT_COLOR]:
+                            gw.set_key_color(letter, MISSING_COLOR)
+                    
                 # Check if the word matches the target word
                 if entered_word == word.upper():
                     gw.show_message("Congratulations! You've guessed the word.")
