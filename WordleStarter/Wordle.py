@@ -4,6 +4,7 @@
 This module is the starter file for the Wordle assignment.
 BE SURE TO UPDATE THIS COMMENT WHEN YOU WRITE THE CODE.
 """
+# test comment
 import random
 
 from WordleDictionary import FIVE_LETTER_WORDS
