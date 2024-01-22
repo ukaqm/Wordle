@@ -24,8 +24,8 @@ def wordle():
             gw.show_message("Invalid word. Try again.")
             return
         else:
-            print('Valid Word')
             current_row = gw.get_current_row()
+            print('Valid Word\n' + 'Number of attempts: ' + str(current_row + 1))
 
             if gw.get_current_row() < N_ROWS:
                 word_remaining = list(word)
