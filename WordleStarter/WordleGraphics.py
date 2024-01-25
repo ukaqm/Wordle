@@ -110,7 +110,7 @@ class WordleGWindow:
                 self.show_message("")
                 s = ""
                 for col in range(N_COLS):
-                    s += self._grid[self._row][col].get_letter();
+                    s += self._grid[self._row][col].get_letter()
                 for fn in self._enter_listeners:
                     fn(s)
             elif ch.isalpha():

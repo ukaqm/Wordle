@@ -58,7 +58,7 @@ def wordle():
                     
                 # Check if the word matches the target word
                 if entered_word == word.upper():
-                    gw.show_message("Congratulations! You've guessed the word in " + str(current_row + 1) + " attempts")
+                    gw.show_message("Congratulations! You've guessed the word in " + str(current_row + 1) + " attempt(s)")
                     return
 
                 # Move to the next row
