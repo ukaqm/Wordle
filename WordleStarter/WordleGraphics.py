@@ -95,7 +95,7 @@ class WordleGWindow:
                                  CANVAS_WIDTH / 2,
                                  MESSAGE_Y)
 
-        def key_action(self, tke):
+        def key_action(tke):
             if isinstance(tke, str):
                 ch = tke.upper()
             else:
@@ -106,7 +106,7 @@ class WordleGWindow:
                     self._col -= 1
                     sq = self._grid[self._row][self._col]
                     sq.set_letter(" ")
-            elif ch == "\r" or ch == "\n" or ch == "ENTER" or ch == "RETURN":
+            elif ch == "\r" or ch == "\n" or ch == "ENTER" or ch == "RETURN":   
                 self.show_message("")
                 s = ""
                 for col in range(N_COLS):
