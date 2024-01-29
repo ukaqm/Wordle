@@ -21,6 +21,11 @@ MISSING_COLOR = "#999999"       # Gray for letters that don't appear
 UNKNOWN_COLOR = "#FFFFFF"       # Undetermined letters are white
 KEY_COLOR = "#DDDDDD"           # Keys are colored light gray
 
+# Colorblind-friendly colors
+CB_CORRECT_COLOR = "#1F77B4"  # A distinct shade for correct letters
+CB_PRESENT_COLOR = "#FF7F0E"  # A distinct shade for misplaced letters
+CB_MISSING_COLOR = MISSING_COLOR  # Keep gray for missing letters as it's usually fine
+
 CANVAS_WIDTH = 500		# Width of the tkinter canvas (pixels)
 CANVAS_HEIGHT = 700		# Height of the tkinter canvas (pixels)
 
@@ -62,7 +67,24 @@ class WordleGWindow:
     """This class creates the Wordle window."""
 
     def __init__(self):
-        """Creates the Wordle window."""
+        self.colorblind_mode = False
+        self.hard_mode = False
+        self.excluded_letters = []
+        self._root = tkinter.Tk()  # Define the _root attribute first
+        self._root.title("Wordle")
+
+        # Initialize the Canvas
+        self._canvas = tkinter.Canvas(self._root, bg="White", width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightthickness=0)
+        self._canvas.pack()
+
+        # Create and Add the Colorblind Mode Button to the Canvas
+        self.colorblind_button = tkinter.Button(self._root, text="Colorblind Mode", command=self.toggle_colorblind_mode)
+        self.colorblind_button.place(x=10, y=10)  # Adjust the position as needed
+                # Add the Hard Mode toggle button
+        self.hard_mode_button = tkinter.Button(self._root, text="Hard Mode: Off", command=self.toggle_hard_mode)
+        self.hard_mode_button.place(x=140, y=10)  # Adjust the position as needed
+
+
 
         def create_grid():
             return [
@@ -100,6 +122,10 @@ class WordleGWindow:
                 ch = tke.upper()
             else:
                 ch = tke.char.upper()
+            if self.hard_mode:
+            # Check if the letter is in the list of excluded letters
+                if ch in self.excluded_letters:
+                    return
             if ch == "\b" or ch == "\007" or ch == "\177" or ch == "DELETE":
                 self.show_message("")
                 if self._row < N_ROWS and self._col > 0:
@@ -171,8 +197,46 @@ class WordleGWindow:
         self._col = 0
         atexit.register(start_event_loop)
 
+    def toggle_hard_mode(self):
+        """Toggle the Hard Mode and update the button text."""
+        self.hard_mode = not self.hard_mode
+        button_text = "Hard Mode: On" if self.hard_mode else "Hard Mode: Off"
+        self.hard_mode_button.config(text=button_text)
+
+    def toggle_colorblind_mode(self):
+        """Toggle the colorblind mode and update the display."""
+        self.colorblind_mode = not self.colorblind_mode
+        self.update_colors_for_colorblind_mode()
+        button_text = "Colorblind Mode: On" if self.colorblind_mode else "Colorblind Mode: Off"
+        self.colorblind_button.config(text=button_text)
+
+    def update_colors_for_colorblind_mode(self):
+            """Update colors of squares and keys based on colorblind mode."""
+            for row in self._grid:
+                for square in row:
+                    # Update square colors
+                    if square.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
+                        square.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
+                    elif square.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
+                        square.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
+                    # MISSING_COLOR remains unchanged
+
+            # Update key colors similarly
+            for key in self._keys.values():
+                if key.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
+                    key.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
+                elif key.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
+                    key.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
+
+    def exclude_letter(self, letter):
+        letter = letter.upper()
+        if letter not in self.excluded_letters:
+            self.excluded_letters.append(letter)
+
     def get_square_letter(self, row, col):
-        return self._grid[row][col].get_letter()
+        ch = self._grid[row][col].get_letter()  # Corrected variable name 'ch' to 'self._grid[row][col].get_letter()'
+        if ch not in self.excluded_letters:
+            return ch
 
     def set_square_letter(self, row, col, ch):
         self._grid[row][col].set_letter(ch)
