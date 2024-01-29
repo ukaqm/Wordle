@@ -9,6 +9,8 @@ import atexit
 import math
 import time
 import tkinter
+import random
+from WordleDictionary import FIVE_LETTER_WORDS
 
 # Constants
 
@@ -84,7 +86,8 @@ class WordleGWindow:
         self.hard_mode_button = tkinter.Button(self._root, text="Hard Mode: Off", command=self.toggle_hard_mode)
         self.hard_mode_button.place(x=140, y=10)  # Adjust the position as needed
 
-
+        self.reset_button = tkinter.Button(self._root, text="New Game", command=self.reset_game)
+        self.reset_button.place(x=250, y=10)  # Adjust the position as needed
 
         def create_grid():
             return [
@@ -197,11 +200,50 @@ class WordleGWindow:
         self._col = 0
         atexit.register(start_event_loop)
 
+
+    def reset_game(self):
+        # Reset the current row to 0
+        self.set_current_row(0)
+        
+        # Clear all the squares on the board
+        for row in range(N_ROWS):
+            for col in range(N_COLS):
+                self.set_square_letter(row, col, " ")
+                self.set_square_color(row, col, UNKNOWN_COLOR)
+
+        # Reset the excluded letters list (if needed)
+        self.excluded_letters = []
+        
+        # Reset the color of all keys to their initial state (KEY_COLOR)
+        # and reset the text color to black
+        for key in self._keys.values():
+            key.set_color(KEY_COLOR)  # Set the background color of the key
+            self._canvas.itemconfig(key._text, fill="Black")  # Set the text color to black
+
+        self.show_message("A brand new word!")
+
+        # Generate a new random word (for a new game)
+        new_word = random.choice(FIVE_LETTER_WORDS).upper()
+        print(new_word)
+
+
+        
+        
+        # Generate a new random word
+        new_word = random.choice(FIVE_LETTER_WORDS).upper()
+        print(new_word)
+
+
+
     def toggle_hard_mode(self):
         """Toggle the Hard Mode and update the button text."""
         self.hard_mode = not self.hard_mode
         button_text = "Hard Mode: On" if self.hard_mode else "Hard Mode: Off"
         self.hard_mode_button.config(text=button_text)
+        if self.hard_mode:
+            self.show_message("Hard Mode Enabled")
+        else:
+             self.show_message("Hard Mode Disabled")
 
     def toggle_colorblind_mode(self):
         """Toggle the colorblind mode and update the display."""
@@ -209,6 +251,10 @@ class WordleGWindow:
         self.update_colors_for_colorblind_mode()
         button_text = "Colorblind Mode: On" if self.colorblind_mode else "Colorblind Mode: Off"
         self.colorblind_button.config(text=button_text)
+        if self.colorblind_mode:
+            self.show_message("Colorblind Mode Enabled")
+        else:
+             self.show_message("Colorblind Mode Disabled")
 
     def update_colors_for_colorblind_mode(self):
             """Update colors of squares and keys based on colorblind mode."""

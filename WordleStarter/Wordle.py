@@ -26,7 +26,7 @@ def wordle():
             return
         #Check if the entered word is valid (in the list of words)
         elif entered_word not in map(str.upper, FIVE_LETTER_WORDS):
-            gw.show_message("Invalid word. Try again.")
+
             return
         else:
             current_row = gw.get_current_row()
