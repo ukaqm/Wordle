@@ -12,6 +12,11 @@ from WordleDictionary import FIVE_LETTER_WORDS
 from WordleGraphics import WordleGWindow, N_COLS, N_ROWS, CORRECT_COLOR, PRESENT_COLOR, MISSING_COLOR, CB_CORRECT_COLOR, CB_PRESENT_COLOR
 
 def wordle():
+    gw = WordleGWindow()
+    colorblind_toggle_button = gw.create_colorblindmode_button()
+    hard_toggle_button = gw.create_hardmode_button()
+    reset_toggle_button = gw.create_newgame_button()
+    
 
     def enter_action(entered_word):
 
@@ -85,7 +90,6 @@ def wordle():
     word = random.choice(FIVE_LETTER_WORDS).upper()
     print(word)
 
-    gw = WordleGWindow()
     gw.add_enter_listener(enter_action)
     #Sets current row to the first row
     gw.set_current_row(0)

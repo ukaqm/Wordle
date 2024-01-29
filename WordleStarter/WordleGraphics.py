@@ -72,22 +72,10 @@ class WordleGWindow:
         self.colorblind_mode = False
         self.hard_mode = False
         self.excluded_letters = []
-        self._root = tkinter.Tk()  # Define the _root attribute first
-        self._root.title("Wordle")
 
-        # Initialize the Canvas
-        self._canvas = tkinter.Canvas(self._root, bg="White", width=CANVAS_WIDTH, height=CANVAS_HEIGHT, highlightthickness=0)
-        self._canvas.pack()
-
-        # Create and Add the Colorblind Mode Button to the Canvas
-        self.colorblind_button = tkinter.Button(self._root, text="Colorblind Mode", command=self.toggle_colorblind_mode)
-        self.colorblind_button.place(x=10, y=10)  # Adjust the position as needed
-                # Add the Hard Mode toggle button
-        self.hard_mode_button = tkinter.Button(self._root, text="Hard Mode: Off", command=self.toggle_hard_mode)
-        self.hard_mode_button.place(x=140, y=10)  # Adjust the position as needed
-
-        self.reset_button = tkinter.Button(self._root, text="New Game", command=self.reset_game)
-        self.reset_button.place(x=250, y=10)  # Adjust the position as needed
+        self.colorblind_button = ""
+        self.hard_mode_button = ""
+        self.reset_button = ""
 
         def create_grid():
             return [
@@ -121,21 +109,23 @@ class WordleGWindow:
                                  MESSAGE_Y)
 
         def key_action(tke):
+            keysym = None
             if isinstance(tke, str):
                 ch = tke.upper()
             else:
                 ch = tke.char.upper()
+                keysym = tke.keysym
             if self.hard_mode:
             # Check if the letter is in the list of excluded letters
                 if ch in self.excluded_letters:
                     return
-            if ch == "\b" or ch == "\007" or ch == "\177" or ch == "DELETE":
+            if keysym == "BackSpace" or ch == "\b" or ch == "\007" or ch == "\177" or ch == "DELETE":
                 self.show_message("")
                 if self._row < N_ROWS and self._col > 0:
                     self._col -= 1
                     sq = self._grid[self._row][self._col]
                     sq.set_letter(" ")
-            elif ch == "\r" or ch == "\n" or ch == "ENTER" or ch == "RETURN" or ch == "KP_ENTER" or ch == "KP_RETURN":
+            elif keysym== "Return" or ch == "\r" or ch == "\n" or ch == "ENTER" or ch == "RETURN" or ch == "KP_ENTER" or ch == "KP_RETURN":
                 self.show_message("")
                 s = ""
                 for col in range(N_COLS):
@@ -200,6 +190,7 @@ class WordleGWindow:
         self._col = 0
         atexit.register(start_event_loop)
 
+    
 
     def reset_game(self):
         # Reset the current row to 0
@@ -225,14 +216,6 @@ class WordleGWindow:
         # Generate a new random word (for a new game)
         new_word = random.choice(FIVE_LETTER_WORDS).upper()
         print(new_word)
-
-
-        
-        
-        # Generate a new random word
-        new_word = random.choice(FIVE_LETTER_WORDS).upper()
-        print(new_word)
-
 
 
     def toggle_hard_mode(self):
@@ -314,6 +297,42 @@ class WordleGWindow:
 
     def show_message(self, msg, color="Black"):
         self._message.set_text(msg, color)
+
+    
+
+    def create_colorblindmode_button(self):
+        button_width = 150
+        num_buttons = 3
+        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
+        self.colorblind_button = tkinter.Button(self._canvas, text="Toggle Color Mode", command=self.toggle_color_mode_button)
+        colorblind_button_x = space_between_buttons - button_width / 2
+        self.colorblind_button.place(x=colorblind_button_x, y=TOP_MARGIN)
+        return self.colorblind_button
+    def toggle_color_mode_button(self):
+        self.toggle_colorblind_mode()
+
+    def create_hardmode_button(self):
+        button_width = 150
+        num_buttons = 3
+        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
+        self.hard_mode_button = tkinter.Button(self._canvas, text="Hard Mode", command=self.toggle_hard_mode_button)
+        hard_button_x = 2 * space_between_buttons - button_width / 2
+        self.hard_mode_button.place(x=hard_button_x, y=TOP_MARGIN)
+        return self.hard_mode_button
+    def toggle_hard_mode_button(self):
+        self.toggle_hard_mode()
+
+    def create_newgame_button(self):
+        button_width = 150
+        num_buttons = 3
+        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
+        self.reset_button = tkinter.Button(self._canvas, text="New Game", command=self.toggle_newgame_button)
+        newgame_button_x = 3 * space_between_buttons - button_width / 2
+        self.reset_button.place(x=newgame_button_x, y=TOP_MARGIN)
+        return self.reset_button
+    def toggle_newgame_button(self):
+        self.reset_game()
+    
 
 
 class WordleSquare:
