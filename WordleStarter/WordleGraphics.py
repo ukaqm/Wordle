@@ -28,7 +28,7 @@ CB_CORRECT_COLOR = "#1F77B4"  # A distinct shade for correct letters
 CB_PRESENT_COLOR = "#FF7F0E"  # A distinct shade for misplaced letters
 CB_MISSING_COLOR = MISSING_COLOR  # Keep gray for missing letters as it's usually fine
 
-CANVAS_WIDTH = 500		# Width of the tkinter canvas (pixels)
+CANVAS_WIDTH = 600		# Width of the tkinter canvas (pixels)
 CANVAS_HEIGHT = 700		# Height of the tkinter canvas (pixels)
 
 SQUARE_SIZE = 60		# Size of each square (pixels)
@@ -67,11 +67,14 @@ MESSAGE_Y = TOP_MARGIN + BOARD_HEIGHT + MESSAGE_SEP
 
 class WordleGWindow:
     """This class creates the Wordle window."""
-
     def __init__(self):
         self.colorblind_mode = False
         self.hard_mode = False
-        self.excluded_letters = []
+        self.correct_letters = {}
+        self.present_letters = set()
+        self.absent_letters = set()  # Set to store letters that are not in the word
+        self.word = ""
+                # Initialize feedback data structures
 
         self.colorblind_button = ""
         self.hard_mode_button = ""
@@ -115,10 +118,6 @@ class WordleGWindow:
             else:
                 ch = tke.char.upper()
                 keysym = tke.keysym
-            if self.hard_mode:
-            # Check if the letter is in the list of excluded letters
-                if ch in self.excluded_letters:
-                    return
             if keysym == "BackSpace" or ch == "\b" or ch == "\007" or ch == "\177" or ch == "DELETE":
                 self.show_message("")
                 if self._row < N_ROWS and self._col > 0:
@@ -190,20 +189,18 @@ class WordleGWindow:
         self._col = 0
         atexit.register(start_event_loop)
 
-    
-
     def reset_game(self):
         # Reset the current row to 0
         self.set_current_row(0)
+        self.correct_letters.clear()
+        self.present_letters.clear()
+        self.absent_letters.clear()
         
         # Clear all the squares on the board
         for row in range(N_ROWS):
             for col in range(N_COLS):
                 self.set_square_letter(row, col, " ")
                 self.set_square_color(row, col, UNKNOWN_COLOR)
-
-        # Reset the excluded letters list (if needed)
-        self.excluded_letters = []
         
         # Reset the color of all keys to their initial state (KEY_COLOR)
         # and reset the text color to black
@@ -213,59 +210,71 @@ class WordleGWindow:
 
         self.show_message("A brand new word!")
 
-        # Generate a new random word (for a new game)
-        new_word = random.choice(FIVE_LETTER_WORDS).upper()
-        print(new_word)
+        self.word = self.new_word()  # Corrected the method call
+        print(self.word)
+
+    def new_word(self):
+        new_word = self.word
+        while new_word == self.word:
+            new_word = random.choice(FIVE_LETTER_WORDS).upper()
+        self.word = new_word
+        print(f"New word generated: {self.word}")  # Debugging print statement
+        return self.word
 
 
     def toggle_hard_mode(self):
-        """Toggle the Hard Mode and update the button text."""
+        """Toggle the Hard Mode and update the button text and color."""
         self.hard_mode = not self.hard_mode
-        button_text = "Hard Mode: On" if self.hard_mode else "Hard Mode: Off"
-        self.hard_mode_button.config(text=button_text)
+
         if self.hard_mode:
+            button_bg_color = "black"  # A green color for active mode
+            button_fg_color = "white"  # White text for better readability
             self.show_message("Hard Mode Enabled")
         else:
-             self.show_message("Hard Mode Disabled")
+            button_bg_color = "#DDDDDD"  # A grey color for inactive mode
+            button_fg_color = "black"  # Black text for better readability
+            self.show_message("Hard Mode Disabled")
+
+        self.hard_mode_button.config(bg=button_bg_color, fg=button_fg_color)
+
 
     def toggle_colorblind_mode(self):
         """Toggle the colorblind mode and update the display."""
         self.colorblind_mode = not self.colorblind_mode
         self.update_colors_for_colorblind_mode()
-        button_text = "Colorblind Mode: On" if self.colorblind_mode else "Colorblind Mode: Off"
-        self.colorblind_button.config(text=button_text)
+
         if self.colorblind_mode:
+            button_bg_color = CB_CORRECT_COLOR  # Choose a color that is distinguishable
+            button_fg_color = "white"
             self.show_message("Colorblind Mode Enabled")
         else:
-             self.show_message("Colorblind Mode Disabled")
+            button_bg_color = "#DDDDDD"  # Neutral color for inactive state
+            button_fg_color = "black"
+            self.show_message("Colorblind Mode Disabled")
+
+        self.colorblind_button.config(bg=button_bg_color, fg=button_fg_color)
 
     def update_colors_for_colorblind_mode(self):
-            """Update colors of squares and keys based on colorblind mode."""
-            for row in self._grid:
-                for square in row:
-                    # Update square colors
-                    if square.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
-                        square.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
-                    elif square.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
-                        square.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
-                    # MISSING_COLOR remains unchanged
+        """Update colors of squares and keys based on colorblind mode."""
+        for row in self._grid:
+            for square in row:
+                # Update square colors
+                if square.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
+                    square.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
+                elif square.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
+                    square.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
+                # MISSING_COLOR remains unchanged
 
-            # Update key colors similarly
-            for key in self._keys.values():
-                if key.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
-                    key.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
-                elif key.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
-                    key.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
-
-    def exclude_letter(self, letter):
-        letter = letter.upper()
-        if letter not in self.excluded_letters:
-            self.excluded_letters.append(letter)
+        # Update key colors similarly
+        for key in self._keys.values():
+            if key.get_color() in [CORRECT_COLOR, CB_CORRECT_COLOR]:
+                key.set_color(CB_CORRECT_COLOR if self.colorblind_mode else CORRECT_COLOR)
+            elif key.get_color() in [PRESENT_COLOR, CB_PRESENT_COLOR]:
+                key.set_color(CB_PRESENT_COLOR if self.colorblind_mode else PRESENT_COLOR)
 
     def get_square_letter(self, row, col):
         ch = self._grid[row][col].get_letter()  # Corrected variable name 'ch' to 'self._grid[row][col].get_letter()'
-        if ch not in self.excluded_letters:
-            return ch
+        return ch
 
     def set_square_letter(self, row, col, ch):
         self._grid[row][col].set_letter(ch)
@@ -298,40 +307,82 @@ class WordleGWindow:
     def show_message(self, msg, color="Black"):
         self._message.set_text(msg, color)
 
-    
-
     def create_colorblindmode_button(self):
-        button_width = 150
-        num_buttons = 3
-        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
-        self.colorblind_button = tkinter.Button(self._canvas, text="Toggle Color Mode", command=self.toggle_color_mode_button)
-        colorblind_button_x = space_between_buttons - button_width / 2
-        self.colorblind_button.place(x=colorblind_button_x, y=TOP_MARGIN)
+        self.colorblind_button = tkinter.Button(
+        self._canvas, 
+        text="Colorblind Mode", 
+        command=self.toggle_color_mode_button,
+        bg="#DDDDDD",  # Professional-looking background color (dark blue-gray)
+        fg="black",  # Contrasting text color
+        font=("Arial", 10, "bold"),  # Simple, readable font
+        borderwidth=1,  # Sleek border width
+        relief="flat"  # Modern flat style
+        )
+        self.colorblind_button.place(x=10, y=100)
         return self.colorblind_button
     def toggle_color_mode_button(self):
         self.toggle_colorblind_mode()
 
     def create_hardmode_button(self):
-        button_width = 150
-        num_buttons = 3
-        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
-        self.hard_mode_button = tkinter.Button(self._canvas, text="Hard Mode", command=self.toggle_hard_mode_button)
-        hard_button_x = 2 * space_between_buttons - button_width / 2
-        self.hard_mode_button.place(x=hard_button_x, y=TOP_MARGIN)
+        self.hard_mode_button = tkinter.Button(
+        self._canvas, 
+        text="Hard Mode", 
+        command=self.toggle_hard_mode_button,
+        bg="#DDDDDD",  # Professional-looking background color (dark blue-gray)
+        fg="black",  # Contrasting text color
+        font=("Arial", 10, "bold"),  # Simple, readable font
+        borderwidth=1,  # Sleek border width
+        relief="flat"  # Modern flat style
+        )
+        self.hard_mode_button.place(x=10, y=150)
         return self.hard_mode_button
     def toggle_hard_mode_button(self):
         self.toggle_hard_mode()
 
     def create_newgame_button(self):
-        button_width = 150
-        num_buttons = 3
-        space_between_buttons = CANVAS_WIDTH / (num_buttons + 1)
-        self.reset_button = tkinter.Button(self._canvas, text="New Game", command=self.toggle_newgame_button)
-        newgame_button_x = 3 * space_between_buttons - button_width / 2
-        self.reset_button.place(x=newgame_button_x, y=TOP_MARGIN)
+        self.reset_button = tkinter.Button(
+        self._canvas, 
+        text="New Game", 
+        command=self.toggle_newgame_button,
+        bg="#4a7a8c",  # Professional-looking background color (dark blue-gray)
+        fg="white",  # Contrasting text color
+        font=("Arial", 10, "bold"),  # Simple, readable font
+        borderwidth=1,  # Sleek border width
+        relief="flat"  # Modern flat style
+        )
+        self.reset_button.place(x=10, y=200)
         return self.reset_button
     def toggle_newgame_button(self):
         self.reset_game()
+    
+    def hard_mode_constraints(self, entered_word):
+        entered_letter_counts = {letter: entered_word.count(letter) for letter in set(entered_word)}
+
+        # Function to count occurrences of a letter in a dict or set
+        def count_occurrences(collection, letter):
+            return sum(1 for item in collection if item == letter)
+
+        for pos, letter in self.correct_letters.items():
+            if entered_word[pos] != letter:
+                return False, f"Letter '{letter}' must be at position {pos + 1}."
+
+        for letter in self.present_letters:
+            if letter not in entered_word:
+                return False, f"Letter '{letter}' must be included in the word."
+            entered_letter_counts[letter] -= 1
+
+        # Check for absence of letters that are not in the word
+        for letter in self.absent_letters:
+            correct_count = count_occurrences(self.correct_letters.values(), letter)
+            present_count = count_occurrences(self.present_letters, letter)
+            correct_and_present_count = correct_count + present_count
+            if entered_letter_counts.get(letter, 0) > correct_and_present_count:
+                return False, f"The word contains too many '{letter}'s."
+
+        return True, "Valid word for hard mode."
+
+
+
     
 
 
