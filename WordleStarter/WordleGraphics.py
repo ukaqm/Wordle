@@ -70,6 +70,7 @@ class WordleGWindow:
     def __init__(self):
         self.colorblind_mode = False
         self.hard_mode = False
+        self.reset_word = False
         self.correct_letters = {}
         self.present_letters = set()
         self.absent_letters = set()  # Set to store letters that are not in the word
@@ -207,18 +208,13 @@ class WordleGWindow:
         for key in self._keys.values():
             key.set_color(KEY_COLOR)  # Set the background color of the key
             self._canvas.itemconfig(key._text, fill="Black")  # Set the text color to black
+        
+        self.new_word()
 
-        self.show_message("A brand new word!")
-
-        self.word = self.new_word()  # Corrected the method call
-        print(self.word)
 
     def new_word(self):
-        new_word = self.word
-        while new_word == self.word:
-            new_word = random.choice(FIVE_LETTER_WORDS).upper()
-        self.word = new_word
-        print(f"New word generated: {self.word}")  # Debugging print statement
+        self.word = random.choice(FIVE_LETTER_WORDS).upper()
+        print(self.word)
         return self.word
 
 
@@ -253,6 +249,9 @@ class WordleGWindow:
             self.show_message("Colorblind Mode Disabled")
 
         self.colorblind_button.config(bg=button_bg_color, fg=button_fg_color)
+
+    def toggle_reset(self):
+        self.reset_game()
 
     def update_colors_for_colorblind_mode(self):
         """Update colors of squares and keys based on colorblind mode."""
@@ -353,7 +352,7 @@ class WordleGWindow:
         self.reset_button.place(x=10, y=200)
         return self.reset_button
     def toggle_newgame_button(self):
-        self.reset_game()
+        self.toggle_reset()
     
     def hard_mode_constraints(self, entered_word):
         entered_letter_counts = {letter: entered_word.count(letter) for letter in set(entered_word)}
@@ -390,11 +389,6 @@ class WordleGWindow:
 
         return True, "Valid word for hard mode."
 
-
-
-
-
-    
 
 
 class WordleSquare:

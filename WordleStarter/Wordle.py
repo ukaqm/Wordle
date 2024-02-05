@@ -15,10 +15,10 @@ def wordle():
     gw.create_colorblindmode_button()
     gw.create_hardmode_button()
     gw.create_newgame_button()
-    word = gw.new_word()
-    print(word)
+    gw.new_word()
 
     def enter_action(entered_word):
+        current_word = gw.word
         if gw.hard_mode:
             is_valid, message = gw.hard_mode_constraints(entered_word)
             if not is_valid:
@@ -42,13 +42,13 @@ def wordle():
             print('Valid Word\n' + 'Number of attempts: ' + str(current_row + 1))
 
             if gw.get_current_row() < N_ROWS:
-                word_remaining = list(word)
+                word_remaining = list(current_word)
 
                 for iCount in range(N_COLS):
                     letter = entered_word[iCount].upper()  # Get the uppercase letter
                 
                 # First pass: Mark correct letters and remove them from word_remaining
-                    if letter == word[iCount]:
+                    if letter == current_word[iCount]:
                         gw.set_square_color(current_row, iCount, correct_color)
                         # Set key color to CORRECT_COLOR if it's not already set
                         if gw.get_key_color(letter) != correct_color:
@@ -58,7 +58,7 @@ def wordle():
                 for iCount in range(N_COLS):
                         letter = entered_word[iCount].upper()
 
-                        if letter == word[iCount]:
+                        if letter == current_word[iCount]:
                             # Update correct_letters for hard mode
                             gw.correct_letters[iCount] = letter
                             # ... rest of the code for coloring the square ...
@@ -78,7 +78,7 @@ def wordle():
                     letter = entered_word[iCount].upper()  # Get the uppercase letter
 
                     # Second pass: Check for present letters
-                    if letter != word[iCount] and letter in word_remaining:
+                    if letter != current_word[iCount] and letter in word_remaining:
                         gw.set_square_color(current_row, iCount, present_color)
                         # Set key color to PRESENT_COLOR if it's not already set to CORRECT_COLOR
                         if gw.get_key_color(letter) not in [correct_color, present_color]:
@@ -91,7 +91,7 @@ def wordle():
                             gw.set_key_color(letter, MISSING_COLOR)         
                     
                 # Check if the word matches the target word
-                if entered_word == word.upper():
+                if entered_word == current_word.upper():
                     if (current_row + 1) == 1:
                         gw.show_message("Congrats! You got the word on your first try!")
                     else:
@@ -100,7 +100,7 @@ def wordle():
 
                 # Move to the next row
                 if current_row == N_ROWS - 1:
-                    gw.show_message("Game over! The word was \"" + word +"\"")
+                    gw.show_message("Game over! The word was \"" + current_word +"\"")
                     return
                 else:
                     gw.set_current_row(current_row + 1)
