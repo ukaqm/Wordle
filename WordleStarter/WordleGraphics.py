@@ -369,6 +369,9 @@ class WordleGWindow:
         for letter in self.present_letters:
             if letter not in entered_word:
                 return False, f"Letter '{letter}' must be included in the word."
+            # Reduce the count for each present letter that is not in the correct position
+            if entered_word.count(letter) <= count_occurrences(self.correct_letters.values(), letter):
+                return False, f"Letter '{letter}' must be included in the word but not at position {self.correct_letters.keys()[self.correct_letters.values().index(letter)] + 1}."
             entered_letter_counts[letter] -= 1
 
         # Check for absence of letters that are not in the word
@@ -377,9 +380,17 @@ class WordleGWindow:
             present_count = count_occurrences(self.present_letters, letter)
             correct_and_present_count = correct_count + present_count
             if entered_letter_counts.get(letter, 0) > correct_and_present_count:
-                return False, f"The word contains too many '{letter}'s."
+                return False, f"You cannot include '{letter}'."
+
+        # Check for correct quantity of each letter
+        for letter in set(self.correct_letters.values()):
+            correct_count = count_occurrences(self.correct_letters.values(), letter)
+            if entered_letter_counts.get(letter, 0) < correct_count:
+                return False, f"Letter '{letter}' must appear exactly {correct_count} times."
 
         return True, "Valid word for hard mode."
+
+
 
 
 

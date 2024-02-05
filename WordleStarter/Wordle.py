@@ -55,10 +55,6 @@ def wordle():
                             gw.set_key_color(letter, correct_color)
                         word_remaining[iCount] = None
 
-
-
-
-
                 for iCount in range(N_COLS):
                         letter = entered_word[iCount].upper()
 
@@ -76,11 +72,6 @@ def wordle():
                             # Update absent_letters for hard mode
                             gw.absent_letters.add(letter)
                             # ... rest of the code for coloring the square ...
-
-
-
-
-
                         
 
                 for iCount in range(N_COLS):
@@ -97,22 +88,7 @@ def wordle():
                         gw.set_square_color(current_row, iCount, MISSING_COLOR)
                         # Set key color to MISSING_COLOR if it's not already set to CORRECT_COLOR or PRESENT_COLOR
                         if gw.get_key_color(letter) not in [correct_color, present_color]:
-                            gw.set_key_color(letter, MISSING_COLOR)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                            
+                            gw.set_key_color(letter, MISSING_COLOR)         
                     
                 # Check if the word matches the target word
                 if entered_word == word.upper():
